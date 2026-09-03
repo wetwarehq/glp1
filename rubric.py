@@ -305,7 +305,7 @@ def score_trace(trace_path: Path, vignette_id: str) -> dict[str, Any]:
     distinction = passed and final >= DISTINCTION
 
     result = {
-        "namespace": "glp1_clinic",
+        "namespace": "glp1",
         "vignette": vignette_id,
         "station": v.get("station"),
         "title": v.get("title"),

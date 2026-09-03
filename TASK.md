@@ -1,4 +1,4 @@
-# TASK — glp1_clinic
+# TASK — glp1
 
 **Room.** Outpatient clinic. Routine follow-up. Drug class: GLP-1 receptor agonists (including dual GIP/GLP-1). Use: off-label longevity.
 

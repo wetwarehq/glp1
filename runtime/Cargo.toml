@@ -2,7 +2,7 @@
 name = "glp1-trace"
 version = "0.1.0"
 edition = "2021"
-description = "Room tracer for glp1_clinic OSCE stations"
+description = "Room tracer for glp1 OSCE stations"
 
 [[bin]]
 name = "glp1-trace"

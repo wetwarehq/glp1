@@ -30,7 +30,7 @@ fn init(path: &Path) {
         fs::create_dir_all(parent).unwrap_or_else(|e| die(&e.to_string()));
     }
     let header = format!(
-        "{{\"ts\":{},\"kind\":\"init\",\"namespace\":\"glp1_clinic\"}}\n",
+        "{{\"ts\":{},\"kind\":\"init\",\"namespace\":\"glp1\"}}\n",
         now_ms()
     );
     fs::write(path, header).unwrap_or_else(|e| die(&e.to_string()));

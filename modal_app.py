@@ -1,13 +1,13 @@
-"""Optional Modal runner. Image is still ghcr.io/wetwarehq/glp1_clinic."""
+"""Optional Modal runner. Image is still ghcr.io/wetwarehq/glp1."""
 
 from __future__ import annotations
 
 import modal
 
-app = modal.App("glp1_clinic")
+app = modal.App("glp1")
 
 image = (
-    modal.Image.from_registry("ghcr.io/wetwarehq/glp1_clinic:latest")
+    modal.Image.from_registry("ghcr.io/wetwarehq/glp1:latest")
     if False
     else modal.Image.debian_slim(python_version="3.12")
     .apt_install("curl", "build-essential")

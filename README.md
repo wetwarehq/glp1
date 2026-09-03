@@ -1,4 +1,4 @@
-# glp1_clinic
+# glp1
 
 A clinic room for an agent that reviews patients already on a GLP-1 drug (semaglutide, tirzepatide, liraglutide, and related).
 
@@ -12,7 +12,7 @@ Bring your own agent. This room is the patient, the chart, and the examiner. It 
 <tr><th>Drug class</th><td>GLP-1 receptor agonists, including dual GIP/GLP-1; also compounded and unlicensed product</td></tr>
 <tr><th>Task</th><td>adverse-event monitoring at routine follow-up</td></tr>
 <tr><th>Use</th><td>off-label longevity</td></tr>
-<tr><th>Image</th><td><code>ghcr.io/wetwarehq/glp1_clinic:latest</code></td></tr>
+<tr><th>Image</th><td><code>ghcr.io/wetwarehq/glp1:latest</code></td></tr>
 <tr><th>Files</th><td><code>TASK.md</code> <code>frame.toml</code> <code>vignettes.jsonl</code> <code>systems_review.json</code> <code>harness.py</code> <code>rubric.py</code></td></tr>
 <tr><th>Log</th><td>every action written to <code>/trace/trace.jsonl</code></td></tr>
 <tr><th>Score</th><td>a <strong>copy</strong> of that log is marked. Pass 0.70. Distinction 0.85.</td></tr>

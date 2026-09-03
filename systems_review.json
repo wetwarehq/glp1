@@ -1,5 +1,5 @@
 {
-  "namespace": "glp1_clinic",
+  "namespace": "glp1",
   "drug_class": "GLP-1 receptor agonists",
   "usage": "offlabel.longevity",
   "task": "AE monitoring at routine follow-up",

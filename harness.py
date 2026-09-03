@@ -41,7 +41,7 @@ class Tracer:
             subprocess.check_call([str(self.bin), "init", str(path)])
         else:
             path.write_text(
-                json.dumps({"kind": "init", "namespace": "glp1_clinic", "ts": 0}) + "\n",
+                json.dumps({"kind": "init", "namespace": "glp1", "ts": 0}) + "\n",
                 encoding="utf-8",
             )
 
@@ -254,10 +254,10 @@ def run_script(vignette_id: str, script: Path, trace_path: Path, score_dir: Path
 def main(argv: list[str]) -> int:
     import argparse
 
-    p = argparse.ArgumentParser(description="glp1_clinic OSCE harness")
+    p = argparse.ArgumentParser(description="glp1 OSCE harness")
     p.add_argument("--vignette", default="st01")
-    p.add_argument("--trace", default=os.environ.get("TRACE_PATH", "/tmp/glp1_clinic/trace.jsonl"))
-    p.add_argument("--score-dir", default=os.environ.get("SCORE_DIR", "/tmp/glp1_clinic/score"))
+    p.add_argument("--trace", default=os.environ.get("TRACE_PATH", "/tmp/glp1/trace.jsonl"))
+    p.add_argument("--score-dir", default=os.environ.get("SCORE_DIR", "/tmp/glp1/score"))
     p.add_argument("--script", default="", help="JSONL command script (agent actions)")
     p.add_argument("--list", action="store_true")
     args = p.parse_args(argv)

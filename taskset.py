@@ -1,4 +1,4 @@
-"""Load the glp1_clinic OSCE taskset."""
+"""Load the glp1 OSCE taskset."""
 
 from __future__ import annotations
 

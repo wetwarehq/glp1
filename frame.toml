@@ -1,8 +1,8 @@
-# glp1_clinic — clinical trial agent room
+# glp1 — clinical trial agent room
 # namespace binds image, taskset, and trace schema
 
 [frame]
-namespace = "glp1_clinic"
+namespace = "glp1"
 version = "0.1.0"
 environment = "clinic"
 style = "OSCE stations"
@@ -11,7 +11,7 @@ drug_class_includes = ["semaglutide", "tirzepatide", "liraglutide", "dulaglutide
 task = "AE monitoring at routine follow-up"
 usage = "offlabel.longevity"
 org = "wetwarehq"
-image = "ghcr.io/wetwarehq/glp1_clinic"
+image = "ghcr.io/wetwarehq/glp1"
 
 [runtime]
 tracer = "runtime/target/release/glp1-trace"
