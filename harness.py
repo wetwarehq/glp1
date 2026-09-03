@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from rubric import score_trace, write_score
-from taskset import all_item_ids, by_id, load_systems
+from taskset import all_item_ids, by_id, load_systems, namespace
 
 ROOT = Path(__file__).resolve().parent
 TRACER_CANDIDATES = [
@@ -32,23 +32,29 @@ def find_tracer() -> Path | None:
     return None
 
 
+def _ns_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["NAMESPACE"] = namespace()
+    return env
+
+
 class Tracer:
     def __init__(self, path: Path) -> None:
         self.path = path
         self.bin = find_tracer()
         path.parent.mkdir(parents=True, exist_ok=True)
         if self.bin:
-            subprocess.check_call([str(self.bin), "init", str(path)])
+            subprocess.check_call([str(self.bin), "init", str(path)], env=_ns_env())
         else:
             path.write_text(
-                json.dumps({"kind": "init", "namespace": "glp1", "ts": 0}) + "\n",
+                json.dumps({"kind": "init", "namespace": namespace(), "ts": 0}) + "\n",
                 encoding="utf-8",
             )
 
     def append(self, event: dict[str, Any]) -> None:
         payload = json.dumps(event, separators=(",", ":"))
         if self.bin:
-            subprocess.check_call([str(self.bin), "append", str(self.path), payload])
+            subprocess.check_call([str(self.bin), "append", str(self.path), payload], env=_ns_env())
         else:
             with self.path.open("a", encoding="utf-8") as fh:
                 fh.write(payload + "\n")
@@ -60,6 +66,7 @@ class Tracer:
             subprocess.check_call(
                 [str(self.bin), "copy", str(self.path), str(dest_dir)],
                 stdout=subprocess.DEVNULL,
+                env=_ns_env(),
             )
         else:
             dest.write_text(self.path.read_text(encoding="utf-8"), encoding="utf-8")

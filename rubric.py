@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from taskset import by_id, core_item_ids, load_systems
+from taskset import by_id, core_item_ids, load_systems, namespace
 
 PASS_MARK = 0.70
 DISTINCTION = 0.85
@@ -305,7 +305,7 @@ def score_trace(trace_path: Path, vignette_id: str) -> dict[str, Any]:
     distinction = passed and final >= DISTINCTION
 
     result = {
-        "namespace": "glp1",
+        "namespace": namespace(),
         "vignette": vignette_id,
         "station": v.get("station"),
         "title": v.get("title"),

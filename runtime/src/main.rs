@@ -25,13 +25,18 @@ fn die(msg: &str) -> ! {
     process::exit(2);
 }
 
+fn namespace() -> String {
+    std::env::var("NAMESPACE").unwrap_or_else(|_| "glp1".into())
+}
+
 fn init(path: &Path) {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).unwrap_or_else(|e| die(&e.to_string()));
     }
     let header = format!(
-        "{{\"ts\":{},\"kind\":\"init\",\"namespace\":\"glp1\"}}\n",
-        now_ms()
+        "{{\"ts\":{},\"kind\":\"init\",\"namespace\":\"{}\"}}\n",
+        now_ms(),
+        namespace()
     );
     fs::write(path, header).unwrap_or_else(|e| die(&e.to_string()));
 }

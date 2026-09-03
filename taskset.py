@@ -1,8 +1,9 @@
-"""Load the glp1 OSCE taskset."""
+"""Load the glp1 OSCE taskset. Namespace is frame.toml, then NAMESPACE, then systems_review.json."""
 
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,36 @@ VIGNETTES = ROOT / "vignettes.jsonl"
 SYSTEMS = ROOT / "systems_review.json"
 FRAME = ROOT / "frame.toml"
 TASK = ROOT / "TASK.md"
+
+
+def _frame_value(key: str) -> str:
+    if not FRAME.exists():
+        return ""
+    prefix = f"{key}"
+    for raw in FRAME.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line.startswith(prefix):
+            continue
+        if "=" not in line:
+            continue
+        lhs, rhs = line.split("=", 1)
+        if lhs.strip() != key:
+            continue
+        return rhs.strip().strip('"').strip("'")
+    return ""
+
+
+def namespace() -> str:
+    """Single binding: frame.toml, env NAMESPACE, and systems_review.json must agree."""
+    frame = _frame_value("namespace")
+    env = os.environ.get("NAMESPACE", "").strip()
+    systems = ""
+    if SYSTEMS.exists():
+        systems = str(load_systems().get("namespace") or "").strip()
+    present = {k: v for k, v in (("frame", frame), ("env", env), ("systems", systems)) if v}
+    if len(set(present.values())) > 1:
+        raise RuntimeError(f"namespace drift: {present}")
+    return frame or env or systems or "glp1"
 
 
 def load_systems() -> dict[str, Any]:
@@ -61,4 +92,4 @@ def catalog() -> list[dict[str, Any]]:
 
 
 if __name__ == "__main__":
-    print(json.dumps({"n": len(load_vignettes()), "catalog": catalog()}, indent=2))
+    print(json.dumps({"namespace": namespace(), "n": len(load_vignettes()), "catalog": catalog()}, indent=2))
