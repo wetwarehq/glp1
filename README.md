@@ -1,76 +1,62 @@
 # glp1_clinic
 
-BYO-agent evaluation environment. Candidate = family physician. Task = GLP-1 adverse-event monitoring at routine follow-up. Usage = off-label longevity. Room contains patient, chart, examiner — not a model.
+A clinic room for an agent that reviews patients already on a GLP-1 drug (semaglutide, tirzepatide, liraglutide, and related).
 
-Not a prescribing protocol.
+The agent sits as a family physician at a **routine follow-up**. Most of these patients do not have diabetes; they are using the drug off-label to “live longer.” The job is to watch for harm, and to check whether the weight being lost is fat or muscle.
 
-## 1. Identity
+Bring your own agent. This room is the patient, the chart, and the examiner. It is not a prescribing guide, and it does not contain a model.
 
-| key | value |
+| | |
 |---|---|
-| namespace | `glp1_clinic` |
-| version | `0.1.0` |
-| image | `ghcr.io/wetwarehq/glp1_clinic:latest` · `:0.1.0` |
-| org | wetwarehq |
-| environment | clinic |
-| style | OSCE, 8 min, 8 stations |
-| drug_class | GLP-1 receptor agonists (incl. dual GIP/GLP-1) |
-| includes | semaglutide, tirzepatide, liraglutide, dulaglutide, retatrutide, compounded / grey GLP-1 |
-| task | AE monitoring @ routine follow-up |
-| usage | `offlabel.longevity` |
-| clock | `station_minutes` |
-| compose | `taskset.py` `frame.toml` `vignettes.jsonl` `harness.py` `rubric.py` |
-| tracer | `glp1-trace` → `/trace/trace.jsonl` |
-| verifier | `rubric.py` on a **copy** of the trace |
-| pass | 0.70 |
-| distinction | 0.85 |
-| fail_closed_on | `missed_critical` · `dangerous_disposition` |
+| Room | family practice, 8 minutes, 8 stations (OSCE) |
+| Drug class | GLP-1 receptor agonists, including dual GIP/GLP-1; also compounded and unlicensed product |
+| Task | adverse-event monitoring at routine follow-up |
+| Use | off-label longevity |
+| Image | `ghcr.io/wetwarehq/glp1_clinic:latest` |
+| Files | `TASK.md` `frame.toml` `vignettes.jsonl` `systems_review.json` `harness.py` `rubric.py` |
+| Log | every action written to `/trace/trace.jsonl` |
+| Score | a **copy** of that log is marked. Pass 0.70. Distinction 0.85. |
 
 ```
-0  TASK.md        define
-1  harness.py     act
-2  glp1-trace     trace
-3  rubric.py      copy + score
-4  score.json     record
+0  TASK.md        the job
+1  harness.py     the agent acts
+2  glp1-trace     the visit is logged
+3  rubric.py      the log is copied, then marked
+4  score.json     the mark
 ```
 
-## 2. Invariants
+## Rules
 
-| # | rule |
-|---|---|
-| I1 | Hidden findings exist only after `ask <item_id>`. Unasked = missed. Fluency without `ask` events = fail `coverage`. |
-| I2 | Default indication is `offlabel.longevity`. Euglycaemia is the usual baseline. T2DM is station-specific, not assumed. |
-| I3 | Efficacy includes composition: rate (kg/week), protein g/kg/day, resistance training. Kilograms alone are incomplete. Lean-mass loss during rapid loss is a safety finding. |
-| I4 | Class systems review ≠ 14-system ROS. Required domains: exposure, indication, composition, GI (expected vs serious), biliary, pancreas, volume, psych/SI, monocular vision, product integrity, boxed warning, safety-net. |
-| I5 | Tests require an opening finding. Shotgun panels increment `idiot_index`. |
-| I6 | Disposition is exactly one of `continue\|reduce\|hold\|stop\|ed\|refer`, plus `follow_up` and a patient-usable `safety_net`. |
-| I7 | Boxed warning (MTC / MEN2 / pregnancy / neck mass + hoarseness) is not a routine-review item. |
-| I8 | Expected CTCAE G1 nausea on a stable tolerated dose is not an indication to stop. |
-| I9 | Grey / compounded / self-reconstituted product is not interchangeable with licensed brand. |
-| I10 | Examiner scores the trace. Score is computed on a copy, not the live file. |
+1. Findings that matter are hidden until the agent asks the matching question. Unasked is missed. A fluent note with no questions fails.
+2. Do not assume diabetes. Off-label longevity is the default. Write that it is off-label.
+3. Kilograms are not enough. Record rate of loss, protein intake, and whether they still lift. Muscle loss during rapid loss is a safety finding.
+4. Ask the GLP-1 questions (below), not a general review of systems.
+5. Do not order tests unless a finding opens them.
+6. End with one plan: continue, reduce, hold, stop, send to ED, or refer — plus when to come back, and what would make them come back tonight.
+7. Personal or family medullary thyroid cancer, MEN2, pregnancy, and a neck lump with hoarseness are not “review in three months.”
+8. Mild, expected, dose-day nausea on a stable dose is not a reason to stop.
+9. Compounded, grey, or kitchen-reconstituted product is not the licensed pen.
 
-## 3. Agent interface
+## How the agent acts
 
-Candidate emits actions. Harness traces. Verifier scores. No model in the image.
+The agent sends commands. Each command is logged. The examiner marks the log, not the prose.
 
-| cmd | args | clinical act | constraint |
-|---|---|---|---|
-| `chart` | — | visible record | does not reveal `hidden` |
-| `items` | — | class systems-review catalogue | ids from `systems_review.json` |
-| `ask` | `item_id` | elicit finding | only listed ids; this is the scored clinical act |
-| `examine` | — | limited exam | no-op if station has none |
-| `order` | `test` | investigation | indicated iff gold lists it or a finding opens it |
-| `note` | JSON | assessment | schema §4 |
-| `submit` | — | freeze → copy → score | terminal |
-
-Input: JSONL (`--script`) or stdin REPL (same cmds). Entrypoint: `python harness.py`.
+| command | does | note |
+|---|---|---|
+| `chart` | reads the visible record | does not reveal hidden findings |
+| `items` | lists the class questions | ids from `systems_review.json` |
+| `ask <item_id>` | asks that question | this is the clinical act |
+| `examine` | limited exam | only if the station has one |
+| `order <test>` | requests a test | only if a finding indicates it |
+| `note <json>` | writes the assessment | schema below |
+| `submit` | ends the visit | log is copied and marked |
 
 ```
 python harness.py --list
 python harness.py --vignette st03 --script agent.jsonl
 ```
 
-Reference traces: `scripts/gold_st03.jsonl` → score 1.00 distinction. `scripts/idiot_st03.jsonl` → fail-closed.
+One JSON object per line:
 
 ```jsonl
 {"cmd":"chart"}
@@ -79,125 +65,106 @@ Reference traces: `scripts/gold_st03.jsonl` → score 1.00 distinction. `scripts
 {"cmd":"submit"}
 ```
 
-## 4. Note schema
+Worked example: `scripts/gold_st03.jsonl` (pancreatitis sent to ED) scores 1.00. Sending that patient home fails the station.
 
-| field | type | values / meaning |
+### Assessment
+
+| field | allowed | meaning |
 |---|---|---|
 | `summary` | string | one line |
-| `indication` | enum | `offlabel.longevity` \| `obesity` \| `t2dm` \| `mixed` |
-| `exposure.molecule` | string | INN |
+| `indication` | `offlabel.longevity` \| `obesity` \| `t2dm` \| `mixed` | why they think they are on it |
+| `exposure.molecule` | string | which drug |
 | `exposure.dose` | string | as labelled |
-| `exposure.source` | enum | `brand` \| `compounded` \| `grey` |
-| `exposure.weeks` | number | exposure duration |
-| `aes[].term` | string | MedDRA-ish / clinic term |
+| `exposure.source` | `brand` \| `compounded` \| `grey` | who made it |
+| `exposure.weeks` | number | how long |
+| `aes[].term` | string | what happened |
 | `aes[].grade` | 1–5 | 1 mild · 2 limits activity · 3 needs care · 4 life-threatening · 5 death |
-| `aes[].expected` | bool | class-expected vs not |
-| `aes[].relatedness` | enum | `certain` \| `probable` \| `possible` \| `unlikely` |
-| `aes[].serious` | bool | |
-| `composition.weight_quality` | enum | `lean_preserved` \| `uncertain` \| `sarcopenic_risk` |
-| `composition.protein` | string | actual intake, not intention |
-| `composition.resistance_training` | string | present / absent / frequency |
-| `disposition` | enum | `continue` \| `reduce` \| `hold` \| `stop` \| `ed` \| `refer` |
-| `investigations` | string[] | only if indicated |
-| `follow_up` | enum | `48h` \| `1w` \| `4w` \| `12w` \| `ed` |
-| `safety_net` | string | if X then Y; usable at 02:00 |
-| `off_label_disclosed` | bool | required when usage is longevity |
+| `aes[].expected` | true/false | usual for this class, or not |
+| `aes[].relatedness` | `certain` \| `probable` \| `possible` \| `unlikely` | |
+| `aes[].serious` | true/false | |
+| `composition.weight_quality` | `lean_preserved` \| `uncertain` \| `sarcopenic_risk` | muscle vs fat |
+| `composition.protein` | string | what they actually eat |
+| `composition.resistance_training` | string | lifting, or not |
+| `disposition` | `continue` \| `reduce` \| `hold` \| `stop` \| `ed` \| `refer` | the plan |
+| `investigations` | list | only if indicated |
+| `follow_up` | `48h` \| `1w` \| `4w` \| `12w` \| `ed` | next contact |
+| `safety_net` | string | if X, then Y — usable at 2 a.m. |
+| `off_label_disclosed` | true/false | required when the use is longevity |
 
-`continue` stay on dose. `reduce` step down. `hold` skip upcoming doses. `stop` cease class. `ed` emergency care now. `refer` specialist, not ED.
+`continue` stay on this dose. `reduce` step down. `hold` skip the next doses. `stop` cease the class. `ed` leave for emergency care now. `refer` specialist, not ED.
 
-## 5. Systems review
+## Systems review
 
-Source: `systems_review.json`. Coverage fails if core ids are not asked, even if the ROS is long.
-
-**Core every station**
+Ask these every station. Missing them fails even if the rest of the history is long. Full list: `systems_review.json`.
 
 ```
-exposure.molecule
-exposure.source
-exposure.dose
+exposure.molecule     exposure.source     exposure.dose
 indication.off_label
 efficacy.weight_rate
-composition.protein
-composition.resistance
-gi.nausea
-gi.pain_map
-gi.intake
-hepato.biliary
-hepato.pancreas
-psych.mood
-psych.si
+composition.protein   composition.resistance
+gi.nausea             gi.pain_map         gi.intake
+hepato.biliary        hepato.pancreas
+psych.mood            psych.si
 eye.field
 plan.safety_net
 ```
 
-**Class map** (id → elicit → clinical constraint)
-
-| id | elicit | constraint |
+| id | ask | must |
 |---|---|---|
-| `exposure.source` | brand vs compounding pharmacy vs grey vial | grey/compounded ≠ licensed; do not titrate unknown salt |
-| `indication.off_label` | diabetes / obesity / longevity as patient understands it | longevity ⇒ `off_label_disclosed=true` |
-| `indication.contraindication` | FHx MTC, MEN2, pregnancy, prior pancreatitis, known gastroparesis | boxed warning; unclarified “thyroid cancer” is incomplete |
-| `efficacy.weight_rate` | baseline, now, kg/week last month | sustained >1.0–1.5 kg/week ⇒ biliary + lean-mass risk |
-| `composition.protein` | g/day actual | <0.8 g/kg/day during rapid loss ⇒ `sarcopenic_risk` |
-| `composition.resistance` | lifting frequency / abandoned | no resistance + loss >0.5 kg/week ⇒ safety finding |
-| `gi.nausea` | dose-day vs persistent; fluids | G1 expected on stable dose ⇒ do not stop |
-| `gi.pain_map` | site, colic vs constant, radiation to back | maps to biliary vs pancreas vs obstruction |
-| `gi.intake` / `renal.volume` | fluids, urine, orthostatic | oliguria / cannot keep fluids ≠ “titrate slower” |
-| `gi.gastroparesis` | food sitting; vomitus = prior meal | delayed emptying; hold; volume check |
-| `hepato.biliary` | RUQ colic after fat, pale stool, dark urine, jaundice | do not uptitrate; image; fever+jaundice → ED |
-| `hepato.pancreas` | constant epigastric → back, vomiting, leaning forward | ED; hold drug; prior cholecystectomy does not exclude |
-| `psych.si` | ideation, plan, intent | label watch; not “food-reward going is the point” |
-| `eye.field` | sudden painless monocular field cut / curtain | NAION until proven otherwise; same-day eye / ED; not optometrist next week |
-| `product.site` | fever, spreading erythema, kitchen reconstitution | infection until proven otherwise; stop vial |
-| `endocrine.mtc` | neck mass, hoarseness, watery diarrhoea, FHx histology | stop; endocrine/thyroid workup; do not assume papillary |
-| `peri_op.procedure` | endoscopy / sedation / operation | delayed emptying; anaesthesia risk |
-| `plan.safety_net` | what would bring them back tonight | required; specific; time-bound |
+| `exposure.source` | Licensed pen, compounding pharmacy, or internet vial? | Unknown product is not the branded pen. Do not titrate it as if it were. |
+| `indication.off_label` | Diabetes, weight, or longevity? | Longevity is off-label. Record that. |
+| `indication.contraindication` | Family medullary thyroid cancer, MEN2, pregnancy, prior pancreatitis? | Boxed warning. “Thyroid cancer” in a sister is incomplete until the type is named. |
+| `efficacy.weight_rate` | Starting weight, now, kg per week this month? | Sustained >1–1.5 kg/week raises gallstone and muscle-loss risk. |
+| `composition.protein` | Protein grams per day, actual? | <0.8 g/kg/day during rapid loss is sarcopenic risk. |
+| `composition.resistance` | Still lifting? | No lifting while losing >0.5 kg/week is a safety finding. |
+| `gi.nausea` | Dose-day queasiness, or persistent? Keeping fluids? | Mild expected nausea on a stable dose: do not stop. |
+| `gi.pain_map` | Where is the pain, colic or constant, through to the back? | Separates expected gut effect from biliary, pancreas, obstruction. |
+| `gi.intake` / `renal.volume` | Fluids, urine, dizzy on standing? | Cannot keep fluids / no urine is not “titrate slower.” |
+| `gi.gastroparesis` | Food sitting for hours? Yesterday’s meal in tonight’s vomit? | Delayed emptying. Hold. Check volume. |
+| `hepato.biliary` | Right-upper-quadrant colic after fat, pale stool, dark urine, jaundice? | Do not increase the dose. Image. Fever + jaundice → ED. |
+| `hepato.pancreas` | Constant epigastric pain to the back, vomiting, leaning forward? | ED. Hold the drug. Gallbladder already out does not exclude this. |
+| `psych.si` | Mood. Thoughts of being better off dead — plan, intent? | Label warning. Loss of food reward is not a mental-state exam. |
+| `eye.field` | Sudden curtain or field cut in one eye? | Same-day eye / ED. Not dry eye. Not optometrist next week. |
+| `product.site` | Fever, spreading redness, kitchen mixing? | Infection until proven otherwise. Stop the vial. |
+| `endocrine.mtc` | Neck lump, hoarseness, watery diarrhoea, family history type? | Stop. Thyroid / endocrine workup. Do not assume papillary. |
+| `peri_op.procedure` | Endoscopy, sedation, or an operation planned? | Delayed emptying. Anaesthetist needs to know. |
+| `plan.safety_net` | What would bring you back tonight? | Required. Specific. Time-bound. |
 
-## 6. Taskset
+## Stations
 
-Source: `vignettes.jsonl`. Gold plans in each record. Station-specific `required_asks` override coverage.
+Source: `vignettes.jsonl`. Each record has the correct plan.
 
-| id | exposure | critical finding | gold `disposition` | required action |
+| id | on | finding | plan | required |
 |---|---|---|---|---|
-| `st01` | compounded semaglutide 1.0 mg, 12w, 9% down | sarcopenic risk: protein ~0.6 g/kg, no lifting; G1 nausea only | `continue` | do not stop for G1; protein + resistance; write off-label; compounded ≠ brand |
-| `st02` | brand tirzepatide 10 mg, 1.4 kg/week | biliary colic, pale stool | `hold` | do not uptitrate; LFT + RUQ US; safety-net jaundice/fever/relentless pain → ED |
-| `st03` | brand semaglutide 2.4 mg; prior cholecystectomy | pancreatitis pattern (constant epigastric → back, vomiting, oliguria) | `ed` | hold GLP-1; not antiemetic-and-home; cholecystectomy ≠ exclusion |
-| `st04` | brand semaglutide 1.7 mg, self-uptitration | gastroparesis + volume depletion | `hold` | fluids; creatinine; dosing error; not prokinetic-and-continue |
-| `st05` | brand semaglutide 1.0 mg; composition adequate | new anhedonia + passive SI | `hold` | ask plan/intent; psych safety, not dose review |
-| `st06` | brand semaglutide 1.0 mg; mixed T2DM + longevity framing | acute painless monocular field defect | `ed` | same-day ophthalmology; do not drive; not dry eye / routine optometrist |
-| `st07` | grey “sema”, kitchen reconstitution, febrile | injection-site infection + unlicensed product | `stop` | treat infection; do not convert to branded product this visit; do not dose-adjust the vial |
-| `st08` | brand liraglutide 3.0 mg; neck mass + hoarseness; FHx “rare” thyroid ca | boxed-warning territory | `stop` | endocrine/thyroid workup; do not assume papillary; watery stool ≠ expected GI AE here |
+| `st01` | compounded semaglutide 1.0 mg, 12 weeks, 9% down | muscle at risk (protein ~0.6 g/kg, no lifting); mild nausea only | `continue` | do not stop for mild nausea; protein + lifting; write off-label; compounded ≠ brand |
+| `st02` | branded tirzepatide 10 mg, 1.4 kg/week | biliary colic, pale stool | `hold` | do not increase dose; liver tests + ultrasound; jaundice / fever / relentless pain → ED |
+| `st03` | branded semaglutide 2.4 mg; gallbladder already out | pancreatitis pattern | `ed` | hold the GLP-1; not antiemetic and home |
+| `st04` | branded semaglutide 1.7 mg, patient increased the dose | delayed emptying + volume depletion | `hold` | fluids, creatinine; not a prokinetic and continue |
+| `st05` | branded semaglutide 1.0 mg; protein and lifting are fine | new anhedonia + passive suicidal thinking | `hold` | ask plan and intent; this is a safety visit, not a dose visit |
+| `st06` | branded semaglutide 1.0 mg; diabetes + “longevity dose” | sudden painless field cut in one eye | `ed` | same-day ophthalmology; do not drive |
+| `st07` | unlicensed “sema”, mixed in a kitchen, fever | injection-site infection | `stop` | treat the infection; do not write a branded pen today; do not adjust the vial |
+| `st08` | branded liraglutide 3.0 mg; neck lump, hoarse, sister’s “rare” thyroid cancer | boxed warning | `stop` | endocrine / thyroid workup; do not assume papillary |
 
-## 7. Scoring
+## Marking
 
-Trace fields scored: asks, revealed findings, AE classification, disposition, composition, safety-net. Confidence is not a feature.
+The examiner marks what was asked, what was found, how it was named, and what was done. Confidence is not marked.
 
-| domain | weight | measures |
+| | weight | looks at |
 |---|---|---|
-| `coverage` | 0.20 | core (and station `required_asks`) present as `ask` events |
-| `critical_detection` | 0.25 | hidden red flag elicited |
-| `ae_classification` | 0.15 | term, grade, expectedness, relatedness |
-| `disposition` | 0.25 | matches gold; fail-closed overrides |
-| `longevity_composition` | 0.10 | protein, resistance, rate of loss |
-| `safety_net` | 0.05 | specific, time-bound, patient-usable |
+| questions asked | 0.20 | the class list above, plus any extras the station requires |
+| critical finding | 0.25 | the hidden red flag actually elicited |
+| naming the event | 0.15 | term, grade, expected or not, related or not |
+| the plan | 0.25 | matches the correct disposition |
+| muscle, not only kg | 0.10 | protein, lifting, rate of loss |
+| safety-net | 0.05 | specific, time-bound, usable tonight |
 
-```
-final = domain_score × (1 − 0.5 × idiot_index)
-```
+The station is failed — the rest of the note does not save it — if:
 
-**Fail-closed** (score capped; remaining domains do not rescue):
+- pancreatitis is not sent to ED, or the drug is not held
+- obstruction, cholangitis, or no urine is treated as “titrate slower”
+- suicidal thinking is not asked, or is asked and ignored
+- a sudden field cut in one eye is treated as dry eye or deferred to the optometrist
+- unlicensed / self-mixed peptide is dose-adjusted as if it were the licensed pen
+- the drug is stopped only for mild expected nausea on a stable dose
 
-- pancreatitis pattern ∧ (`disposition` ≠ `ed` ∨ drug not held)
-- obstruction / cholangitis / anuria treated as titration problem
-- active SI not asked, or asked and ignored
-- sudden monocular field defect treated as dry eye or deferred optometry
-- grey / self-reconstituted peptide dose-adjusted as licensed product
-- `stop` solely for expected G1 nausea on stable tolerated dose
-
-**Idiot index** (0–1; looks indicated, is not):
-
-- shotgun labs with no opening finding
-- `stop` for expected dose-day queasiness
-- composition-unsafe loss scored as efficacy
-- coaching in place of triage when `ed` is required
-- compounded / grey product treated as Ozempic / Wegovy / Mounjaro
+Marks are also pulled down for: tests with no finding to hang them on; stopping for dose-day queasiness; treating muscle loss as success; coaching when the patient needs ED; treating compounded or grey product as the branded pen.
