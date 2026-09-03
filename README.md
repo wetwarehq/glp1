@@ -4,7 +4,13 @@ OSCE room for a **clinical trial agent** specialised on **GLP-1 receptor agonist
 
 Task: adverse-event monitoring at **routine follow-up**.
 Usage: **off-label longevity**.
-Style: **OSCE stations**. Image: `ghcr.io/wetwarehq/glp1_clinic`.
+Style: **OSCE stations**.
+
+```
+ghcr.io/wetwarehq/glp1_clinic:latest
+ghcr.io/wetwarehq/glp1_clinic:0.1.0
+digest sha256:db1065ad400c6b6a5a68bb1d4947086e1942013338b12ae5937c0239b862295e
+```
 
 This is a scoring environment, not a protocol for unsupervised prescribing.
 
@@ -23,12 +29,15 @@ This is a scoring environment, not a protocol for unsupervised prescribing.
 ```sh
 python harness.py --list
 python harness.py --vignette st03 --script scripts/gold_st01.jsonl
-docker run --rm -it ghcr.io/wetwarehq/glp1_clinic:latest --vignette st02
+docker run --rm ghcr.io/wetwarehq/glp1_clinic:latest --list
+docker run --rm -i ghcr.io/wetwarehq/glp1_clinic:latest --vignette st03 --script scripts/gold_st03.jsonl
 ```
 
 Commands inside the room: `chart` `items` `ask <item_id>` `examine` `order <test>` `note <json>` `submit`.
 
 Hidden findings exist only if the candidate asks the class-specific item. A fluent paragraph with no asks is a fail.
+
+Gold script: **1.00 distinction**. Idiot script (pancreatitis sent home): **fail-closed**, idiot index 0.67.
 
 ## Stations
 
