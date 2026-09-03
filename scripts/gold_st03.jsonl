@@ -1,0 +1,20 @@
+{"cmd":"chart"}
+{"cmd":"ask","item":"exposure.molecule"}
+{"cmd":"ask","item":"exposure.dose"}
+{"cmd":"ask","item":"exposure.source"}
+{"cmd":"ask","item":"indication.off_label"}
+{"cmd":"ask","item":"efficacy.weight_rate"}
+{"cmd":"ask","item":"composition.protein"}
+{"cmd":"ask","item":"composition.resistance"}
+{"cmd":"ask","item":"gi.nausea"}
+{"cmd":"ask","item":"gi.pain_map"}
+{"cmd":"ask","item":"gi.intake"}
+{"cmd":"ask","item":"hepato.biliary"}
+{"cmd":"ask","item":"hepato.pancreas"}
+{"cmd":"ask","item":"psych.mood"}
+{"cmd":"ask","item":"psych.si"}
+{"cmd":"ask","item":"eye.field"}
+{"cmd":"ask","item":"plan.safety_net"}
+{"cmd":"examine"}
+{"cmd":"note","note":{"summary":"Acute pancreatitis pattern on semaglutide. ED now. Hold drug.","indication":"obesity","exposure":{"molecule":"semaglutide","dose":"2.4 mg weekly","source":"brand","weeks":20},"aes":[{"term":"pancreatitis","grade":3,"expected":false,"relatedness":"possible","serious":true}],"composition":{"weight_quality":"uncertain","protein":"unknown","resistance_training":"unknown"},"disposition":"ed","investigations":["lipase","FBC","UEC","LFTs"],"follow_up":"ed","safety_net":"Go to ED now for constant pain to the back and vomiting. Do not take the next injection.","off_label_disclosed":true}}
+{"cmd":"submit"}

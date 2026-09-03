@@ -1,0 +1,4 @@
+{"cmd":"chart"}
+{"cmd":"ask","item":"gi.nausea"}
+{"cmd":"note","note":{"summary":"A bit of nausea, common with Ozempic, give ondansetron and see next week.","indication":"obesity","aes":[{"term":"nausea","grade":1,"expected":true,"relatedness":"probable","serious":false}],"disposition":"continue","investigations":["CBC","CMP","lipids","TSH","B12","iron","CRP","ESR","A1c"],"follow_up":"12w","safety_net":"call if still nauseated","off_label_disclosed":false}}
+{"cmd":"submit"}

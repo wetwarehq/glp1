@@ -1,0 +1,21 @@
+{"cmd":"chart"}
+{"cmd":"ask","item":"exposure.molecule"}
+{"cmd":"ask","item":"exposure.dose"}
+{"cmd":"ask","item":"exposure.source"}
+{"cmd":"ask","item":"indication.off_label"}
+{"cmd":"ask","item":"indication.consent"}
+{"cmd":"ask","item":"efficacy.weight_rate"}
+{"cmd":"ask","item":"composition.protein"}
+{"cmd":"ask","item":"composition.resistance"}
+{"cmd":"ask","item":"composition.lean"}
+{"cmd":"ask","item":"gi.nausea"}
+{"cmd":"ask","item":"gi.pain_map"}
+{"cmd":"ask","item":"gi.intake"}
+{"cmd":"ask","item":"hepato.biliary"}
+{"cmd":"ask","item":"hepato.pancreas"}
+{"cmd":"ask","item":"psych.mood"}
+{"cmd":"ask","item":"psych.si"}
+{"cmd":"ask","item":"eye.field"}
+{"cmd":"ask","item":"plan.safety_net"}
+{"cmd":"note","note":{"summary":"Off-label compounded semaglutide, expected G1 nausea, 9% loss with inadequate protein and no resistance training.","indication":"offlabel.longevity","exposure":{"molecule":"semaglutide","dose":"1.0 mg weekly","source":"compounded","weeks":12},"aes":[{"term":"nausea","grade":1,"expected":true,"relatedness":"probable","serious":false}],"composition":{"weight_quality":"sarcopenic_risk","protein":"0.6 g/kg","resistance_training":"none"},"disposition":"continue","investigations":[],"follow_up":"4w","safety_net":"If constant abdominal pain to the back, jaundice, no urine, sudden visual field cut, or suicidal thoughts — ED the same day. Do not increase the dose without review.","off_label_disclosed":true}}
+{"cmd":"submit"}

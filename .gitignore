@@ -1,0 +1,6 @@
+runtime/target
+__pycache__
+*.pyc
+/trace
+/score
+.DS_Store

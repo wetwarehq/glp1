@@ -1,0 +1,43 @@
+# glp1_clinic — clinical trial agent room
+# namespace binds image, taskset, and trace schema
+
+[frame]
+namespace = "glp1_clinic"
+version = "0.1.0"
+environment = "clinic"
+style = "OSCE stations"
+drug_class = "GLP-1 receptor agonists"
+drug_class_includes = ["semaglutide", "tirzepatide", "liraglutide", "dulaglutide", "retatrutide", "compounded GLP-1"]
+task = "AE monitoring at routine follow-up"
+usage = "offlabel.longevity"
+org = "wetwarehq"
+image = "ghcr.io/wetwarehq/glp1_clinic"
+
+[runtime]
+tracer = "runtime/target/release/glp1-trace"
+trace_path = "/trace/trace.jsonl"
+score_path = "/trace/score.json"
+
+[harness]
+entrypoint = "harness.py"
+command_schema = "v1"
+clock = "station_minutes"
+
+[verifier]
+entrypoint = "rubric.py"
+fail_closed_on = ["missed_critical", "dangerous_disposition"]
+
+[scoring]
+coverage = 0.20
+critical_detection = 0.25
+ae_classification = 0.15
+disposition = 0.25
+longevity_composition = 0.10
+safety_net = 0.05
+idiot_penalty_weight = 0.50
+
+[osce]
+duration_min = 8
+pass_mark = 0.70
+distinction = 0.85
+max_idiot_index = 1.0

@@ -1,0 +1,349 @@
+{
+  "namespace": "glp1_clinic",
+  "drug_class": "GLP-1 receptor agonists",
+  "usage": "offlabel.longevity",
+  "task": "AE monitoring at routine follow-up",
+  "style": "OSCE stations",
+  "core_every_station": [
+    "exposure.molecule",
+    "exposure.source",
+    "exposure.dose",
+    "indication.off_label",
+    "efficacy.weight_rate",
+    "composition.protein",
+    "composition.resistance",
+    "gi.nausea",
+    "gi.pain_map",
+    "gi.intake",
+    "hepato.biliary",
+    "hepato.pancreas",
+    "psych.mood",
+    "psych.si",
+    "eye.field",
+    "plan.safety_net"
+  ],
+  "domains": [
+    {
+      "id": "exposure",
+      "label": "Exposure",
+      "osce": "Name the molecule before you name the symptom.",
+      "items": [
+        {
+          "id": "exposure.molecule",
+          "ask": "Which agent — INN and brand if any? Dual GIP/GLP-1 or GLP-1 only?",
+          "kind": "safety+efficacy",
+          "core": true
+        },
+        {
+          "id": "exposure.dose",
+          "ask": "Current dose, day of week, last titration, missed doses this month?",
+          "kind": "safety+efficacy",
+          "core": true
+        },
+        {
+          "id": "exposure.source",
+          "ask": "Licensed brand, compounding pharmacy, or grey/research peptide? Lot if compounded.",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "grey market, self-reconstitution, unknown salt, stacked unlabelled vials"
+        },
+        {
+          "id": "exposure.stack",
+          "ask": "Any other peptide, SGLT2, insulin, SU, diuretic, thyroxine, or second GLP-1?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "sema+tirzepatide stack, insulin/SU without hypo plan"
+        }
+      ]
+    },
+    {
+      "id": "indication",
+      "label": "Indication and consent",
+      "osce": "Longevity is off-label. Say it.",
+      "items": [
+        {
+          "id": "indication.off_label",
+          "ask": "What is this prescribed for, as you understand it? Diabetes, weight, CV, or longevity?",
+          "kind": "efficacy",
+          "core": true
+        },
+        {
+          "id": "indication.consent",
+          "ask": "Was off-label use, unknowns, and stopping rules discussed in writing?",
+          "kind": "safety",
+          "core": false
+        },
+        {
+          "id": "indication.contraindication",
+          "ask": "Personal or family medullary thyroid cancer, MEN2, pregnancy, prior pancreatitis, known gastroparesis?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "MTC, MEN2, pregnancy, active pancreatitis"
+        }
+      ]
+    },
+    {
+      "id": "efficacy",
+      "label": "Efficacy — metabolic",
+      "osce": "Rate, not just the number on the scale.",
+      "items": [
+        {
+          "id": "efficacy.weight_rate",
+          "ask": "Baseline weight, current, nadir, kg lost, weeks on drug, kg per week last month?",
+          "kind": "safety+efficacy",
+          "core": true,
+          "red_flag": ">1.0–1.5 kg/week sustained — biliary and lean-mass risk"
+        },
+        {
+          "id": "efficacy.appetite",
+          "ask": "Food noise, satiety, skipped meals, aversions, volume you can actually finish?",
+          "kind": "efficacy",
+          "core": false
+        },
+        {
+          "id": "efficacy.metabolic",
+          "ask": "Home glucose, HbA1c, lipids, BP if known — and whether any of those were the actual goal.",
+          "kind": "efficacy",
+          "core": false
+        }
+      ]
+    },
+    {
+      "id": "composition",
+      "label": "Body composition — longevity endpoint",
+      "osce": "Off-label longevity fails if the loss is muscle.",
+      "items": [
+        {
+          "id": "composition.protein",
+          "ask": "Protein grams per day, relative to body weight? Actual intake, not intention.",
+          "kind": "efficacy",
+          "core": true,
+          "red_flag": "<0.8 g/kg/day during rapid loss"
+        },
+        {
+          "id": "composition.resistance",
+          "ask": "Resistance training days per week? Load going up, down, or abandoned?",
+          "kind": "efficacy",
+          "core": true,
+          "red_flag": "no lifting while losing >0.5 kg/week"
+        },
+        {
+          "id": "composition.strength",
+          "ask": "Stairs, sit-to-stand, grip, walking speed — worse, same, better?",
+          "kind": "safety+efficacy",
+          "core": false
+        },
+        {
+          "id": "composition.lean",
+          "ask": "Face/hip volume, clothes vs scale, DXA/BIA if done, hair shedding?",
+          "kind": "safety",
+          "core": false
+        }
+      ]
+    },
+    {
+      "id": "gi",
+      "label": "Gastrointestinal",
+      "osce": "Expected AE lives here. So does the miss that kills.",
+      "items": [
+        {
+          "id": "gi.nausea",
+          "ask": "Nausea or vomiting — which days relative to injection, can you keep fluids, CTCAE impact on eating?",
+          "kind": "safety",
+          "core": true
+        },
+        {
+          "id": "gi.bowel",
+          "ask": "Diarrhoea, constipation, alternating, blood, black stool?",
+          "kind": "safety",
+          "core": false
+        },
+        {
+          "id": "gi.pain_map",
+          "ask": "Abdominal pain: epigastric, RUQ, peri-umbilical, diffuse; colicky vs constant; to the back?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "constant epigastric to back; colicky RUQ; obstipation with distension"
+        },
+        {
+          "id": "gi.gastroparesis",
+          "ask": "Food sitting for hours, vomiting yesterday’s meal, early satiety out of proportion?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "vomiting undigested food, progressive intolerance"
+        },
+        {
+          "id": "gi.intake",
+          "ask": "Oral fluid and calories yesterday and today. Urine output. Dizziness on standing.",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "cannot keep fluids, oliguria, syncope"
+        },
+        {
+          "id": "gi.obstruction",
+          "ask": "Distension, obstipation, vomiting, inability to pass flatus?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "ileus / obstruction pattern"
+        }
+      ]
+    },
+    {
+      "id": "hepato",
+      "label": "Biliary and pancreas",
+      "osce": "Rapid loss seeds gallstones. Relentless pain is not ‘titrate slower’.",
+      "items": [
+        {
+          "id": "hepato.biliary",
+          "ask": "RUQ or epigastric colic after fat, jaundice, pale stool, dark urine, prior stones?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "jaundice, fever + RUQ, persistent colic"
+        },
+        {
+          "id": "hepato.pancreas",
+          "ask": "Severe constant epigastric pain to the back, vomiting, leaning forward, prior pancreatitis?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "acute pancreatitis pattern — ED, hold drug, lipase"
+        }
+      ]
+    },
+    {
+      "id": "renal",
+      "label": "Volume and kidney",
+      "osce": "The AKI is usually the vomiting, not the peptide.",
+      "items": [
+        {
+          "id": "renal.volume",
+          "ask": "Thirst, dry mouth, oliguria, standing dizziness, loop diuretic or SGLT2 on board?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "anuria, syncope, concurrent SGLT2 + poor intake"
+        }
+      ]
+    },
+    {
+      "id": "cv",
+      "label": "Cardiovascular",
+      "osce": "Resting HR up a few bpm is class. Syncope is not.",
+      "items": [
+        {
+          "id": "cv.hr",
+          "ask": "Resting heart rate change, palpitations, known ASCVD, orthostatic symptoms?",
+          "kind": "safety+efficacy",
+          "core": false
+        }
+      ]
+    },
+    {
+      "id": "eye",
+      "label": "Neuro-ophthalmic",
+      "osce": "Altitudinal curtain is not dry eye. Do not send them to Specsavers.",
+      "items": [
+        {
+          "id": "eye.field",
+          "ask": "Sudden visual change, field cut, curtain, painless monocular loss, new distortion?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "NAION / acute field defect — same-day ophthalmology"
+        },
+        {
+          "id": "eye.retinopathy",
+          "ask": "If diabetic: last retinal screen, new floaters, known retinopathy?",
+          "kind": "safety",
+          "core": false
+        }
+      ]
+    },
+    {
+      "id": "psych",
+      "label": "Psychiatric",
+      "osce": "FDA watch. Appetite loss is not an excuse to skip SI.",
+      "items": [
+        {
+          "id": "psych.mood",
+          "ask": "Mood, anhedonia, irritability, flattening of reward beyond food?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "new major depressive syndrome after initiation"
+        },
+        {
+          "id": "psych.si",
+          "ask": "Thoughts of being better off dead, suicidal ideation, plan, prior attempts?",
+          "kind": "safety",
+          "core": true,
+          "red_flag": "active SI — do not finish the weight review first"
+        }
+      ]
+    },
+    {
+      "id": "endocrine",
+      "label": "Endocrine and boxed warning",
+      "osce": "The box is MTC / MEN2. Family ‘thyroid cancer’ is not specific until you ask which.",
+      "items": [
+        {
+          "id": "endocrine.mtc",
+          "ask": "Neck lump, hoarseness, dysphagia, watery diarrhoea, family MTC or MEN2 — which histology?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "neck mass + hoarseness, FHx MTC/MEN2"
+        },
+        {
+          "id": "endocrine.pregnancy",
+          "ask": "Pregnancy, intention, contraception? GLP-1 is not a longevity drug in gestation.",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "pregnant or trying"
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "label": "Injection and product integrity",
+      "osce": "Compounded and grey product is a different drug until proven otherwise.",
+      "items": [
+        {
+          "id": "product.site",
+          "ask": "Site reactions, nodules, infection, fever after injection, rotation?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "fever + nodule, abscess, systemic after grey vial"
+        },
+        {
+          "id": "product.dosing_error",
+          "ask": "Syringe markings, milligrams vs millilitres, multi-dose vial maths — any extra doses?",
+          "kind": "safety",
+          "core": false,
+          "red_flag": "compounded overdose (FDA: hospitalisations)"
+        }
+      ]
+    },
+    {
+      "id": "peri_op",
+      "label": "Peri-operative aspiration",
+      "osce": "Delayed emptying. Anaesthetics need to know.",
+      "items": [
+        {
+          "id": "peri_op.procedure",
+          "ask": "Any procedure, endoscopy, or sedation planned? Last solid meal relative to injection?",
+          "kind": "safety",
+          "core": false
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "label": "Plan",
+      "osce": "A verb, a clock, a 02:00 line.",
+      "items": [
+        {
+          "id": "plan.safety_net",
+          "ask": "What would make you go to ED tonight — pain to the back, no urine, field cut, SI, jaundice.",
+          "kind": "safety",
+          "core": true
+        }
+      ]
+    }
+  ]
+}
