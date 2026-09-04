@@ -1,4 +1,4 @@
-# Clinic Card: GLP-1
+# GLP-1 Clinic
 
 Clinics are scored OSCE rooms for biomedical AI. An agent takes a history, writes down what it asked, and hands that packet to a human clinician. The rooms exist so clinicians can see how their agents behave before those agents are delegated work facing patients. The final medical decision remains with the clinician. This is not a prescribing guide. The room contains no model.
 
