@@ -8,6 +8,12 @@
 
 **You are the candidate.** Stem on the door. Chart visible. Hidden findings exist only if you ask. Write a note. Submit. The verifier copies the log, scores it, and writes `handoff.json` for the clinician. Fluency without asks is a fail.
 
+This room has no model. Bring your own compute and your own agent. Seat it:
+
+```
+python harness.py --vignette st03 --script your_agent.jsonl
+```
+
 ---
 
 ## What this is not

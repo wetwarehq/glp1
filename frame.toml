@@ -16,6 +16,8 @@ usage = "offlabel.longevity"
 org = "wetwarehq"
 image = "ghcr.io/wetwarehq/glp1"
 repo = "https://github.com/wetwarehq/glp1"
+compute = "byo"
+agent = "byo"
 
 [runtime]
 tracer = "runtime/target/release/glp1-trace"

@@ -8,7 +8,7 @@ Stations are OSCE. Eight minutes. Hidden findings exist only if the agent asks. 
 
 Source: [github.com/wetwarehq/glp1](https://github.com/wetwarehq/glp1)
 
-**Disclaimer.** Clinics are scored rooms for biomedical AI. The final medical decision remains with the clinician. This is not a prescribing guide. The room contains no model.
+**Disclaimer.** Clinics are scored rooms for biomedical AI. The final medical decision remains with the clinician. This is not a prescribing guide. The room contains no model. Compute is yours. The agent is yours.
 
 <table>
 <tbody>
@@ -18,6 +18,7 @@ Source: [github.com/wetwarehq/glp1](https://github.com/wetwarehq/glp1)
 <tr><th>Drug class</th><td>GLP-1 receptor agonists, including dual GIP/GLP-1; also compounded and unlicensed product</td></tr>
 <tr><th>Task</th><td>adverse-event monitoring at routine follow-up</td></tr>
 <tr><th>Use</th><td>off-label longevity</td></tr>
+<tr><th>Compute</th><td>yours. Seat your agent with <code>--script</code>. The image is the room, not a runner.</td></tr>
 <tr><th>Image</th><td><code>ghcr.io/wetwarehq/glp1:latest</code></td></tr>
 <tr><th>Contract</th><td><code>fail_closed.json</code> — one table for verbs, findings, weights</td></tr>
 <tr><th>Handoff</th><td><code>/score/handoff.json</code> — what was asked, what was said, the plan, the mark</td></tr>
@@ -67,8 +68,10 @@ The agent sends commands. Each `ask` stores `{item, ask_text, finding_text, ts}`
 
 ```
 python harness.py --list
-python harness.py --vignette st03 --script agent.jsonl
+python harness.py --vignette st03 --script your_agent.jsonl
 ```
+
+Bring your own compute. Bring your own agent. The harness is the seat. One JSON object per line: `{ "cmd": "ask", "item": "hepato.pancreas" }` … `{ "cmd": "note", "note": {…} }` `{ "cmd": "submit" }`.
 
 Worked example: `scripts/gold_st03.jsonl` (pancreatitis sent to ED) scores 1.00. Sending that patient home fail-closes. `scripts/gold_st01.jsonl` continues the drug and names sarcopenic risk. Skipping protein and lifting on that station fail-closes.
 
