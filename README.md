@@ -19,7 +19,6 @@ Source: [github.com/wetwarehq/glp1](https://github.com/wetwarehq/glp1)
 <tr><th>Task</th><td>adverse-event monitoring at routine follow-up</td></tr>
 <tr><th>Use</th><td>off-label longevity</td></tr>
 <tr><th>Compute</th><td>yours. Seat your agent with <code>--script</code>. The image is the room, not a runner.</td></tr>
-<tr><th>Image</th><td><code>ghcr.io/wetwarehq/glp1:latest</code></td></tr>
 <tr><th>Contract</th><td><code>fail_closed.json</code> — one table for verbs, findings, weights</td></tr>
 <tr><th>Handoff</th><td><code>/score/handoff.json</code> — what was asked, what was said, the plan, the mark</td></tr>
 <tr><th>Pass</th><td>0.70 · distinction 0.85 · fail-closed cap 0.30</td></tr>
