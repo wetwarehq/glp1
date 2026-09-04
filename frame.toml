@@ -1,9 +1,12 @@
-# glp1 — clinical trial agent room
-# namespace binds image, taskset, and trace schema
+# glp1 — clinic
+# A clinic is a scored OSCE room: the agent takes a history, the runtime
+# writes it down, the verifier hands the packet to a human clinician.
+# Namespace binds image, taskset, and trace schema.
 
 [frame]
 namespace = "glp1"
 version = "0.1.0"
+product = "clinic"
 environment = "clinic"
 style = "OSCE stations"
 drug_class = "GLP-1 receptor agonists"
@@ -12,11 +15,13 @@ task = "AE monitoring at routine follow-up"
 usage = "offlabel.longevity"
 org = "wetwarehq"
 image = "ghcr.io/wetwarehq/glp1"
+repo = "https://github.com/wetwarehq/glp1"
 
 [runtime]
 tracer = "runtime/target/release/glp1-trace"
 trace_path = "/trace/trace.jsonl"
-score_path = "/trace/score.json"
+score_path = "/score/score.json"
+handoff_path = "/score/handoff.json"
 
 [harness]
 entrypoint = "harness.py"
@@ -24,15 +29,17 @@ command_schema = "v1"
 clock = "station_minutes"
 
 [verifier]
-entrypoint = "rubric.py"
-fail_closed_on = ["missed_critical", "dangerous_disposition"]
+entrypoint = "verifier.py"
+contract = "fail_closed.json"
 
 [scoring]
-coverage = 0.20
+# Authoritative weights live in fail_closed.json. Duplicated here for the frame.
+coverage = 0.15
 critical_detection = 0.25
 ae_classification = 0.15
-disposition = 0.25
+disposition = 0.20
 longevity_composition = 0.10
+contract = 0.10
 safety_net = 0.05
 idiot_penalty_weight = 0.50
 
@@ -40,4 +47,3 @@ idiot_penalty_weight = 0.50
 duration_min = 8
 pass_mark = 0.70
 distinction = 0.85
-max_idiot_index = 1.0

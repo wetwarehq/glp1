@@ -1,58 +1,51 @@
-# TASK — glp1
+# TASK — glp1 clinic
 
-**Room.** Outpatient clinic. Routine follow-up. Drug class: GLP-1 receptor agonists (including dual GIP/GLP-1). Use: off-label longevity.
+**Clinic.** A virtual OSCE room. The agent takes a follow-up history, writes down what it asked, and hands that packet to a human clinician. The final medical decision remains with the clinician.
 
-**Job.** Adverse-event monitoring plus efficacy, at the level of an OSCE station — not a wellness chat, not a primary-care general ROS.
+**Room.** Outpatient clinic. Routine follow-up. Drug class: GLP-1 receptor agonists (semaglutide / Ozempic / Wegovy, tirzepatide, liraglutide, compounded and grey product). Use: off-label longevity more often than diabetes.
 
-**You are the candidate.** The stem is on the door. Chart is visible. Hidden findings exist only if you ask the right class-specific item. Write a note. Submit. The examiner scores the trace, not your confidence.
+**Job.** Adverse-event monitoring plus composition. Gut, gallbladder, pancreas, eyes, mood, and whether the weight coming off is fat or muscle.
+
+**You are the candidate.** Stem on the door. Chart visible. Hidden findings exist only if you ask. Write a note. Submit. The verifier copies the log, scores it, and writes `handoff.json` for the clinician. Fluency without asks is a fail.
 
 ---
 
 ## What this is not
 
 - Not T2DM clinic by default. Some stations have diabetes; most are euglycaemic longevity users.
-- Not "weight-loss coaching." Kilograms without composition is an incomplete efficacy endpoint.
-- Not a licence to invent a 40-item pathology panel. Tests are allowed only when a finding opens them.
-- Not pharmacovigilance theatre. If the patient needs ED, you send them. If the nausea is CTCAE G1 on a stable dose, you do not stop the drug.
+- Not weight-loss coaching. Kilograms without composition is an incomplete endpoint.
+- Not a licence to invent a 40-item panel. Tests only when a finding opens them.
+- Not pharmacovigilance theatre. If they need ED, send them. If nausea is CTCAE G1 on a stable dose, do not stop.
 
 ---
 
 ## Required behaviour every station
 
-1. **Name the exposure.** Molecule, dose, last titration, source (brand / compounded / grey), missed doses, stacking.
-2. **State the indication as the patient understands it** and that this is off-label for longevity if it is.
-3. **Systems review is class-specific** (see `systems_review.json`). A generic 14-system ROS that never hits biliary, pancreas, gastroparesis, NAION, SI, or lean-mass loss will fail coverage even if long.
-4. **Efficacy is weight quality.** Rate (kg/week), % total body weight, protein g/kg/day, resistance training, strength proxy. A "successful" 15% loss with no protein and no lifting is a safety finding in this usage.
-5. **Grade what you find.** CTCAE-style G1–G5 for the dominant AE. Expected vs serious. Relatedness (WHO-UMC: certain / probable / possible / unlikely / unassessable).
-6. **Disposition is a verb.** `continue` | `reduce` | `hold` | `stop` | `ed` | `refer`. Then one follow-up interval and a safety-net line the patient could use at 02:00.
-7. **Do not treat the boxed warning as trivia.** MTC/MEN2, pregnancy, and "neck lump + hoarseness" are not "reassure and review in 3 months."
+1. **Name the exposure.** Molecule, dose, last titration, source (brand / compounded / grey).
+2. **State the indication as the patient understands it.** Off-label for longevity if it is. Write that down.
+3. **Systems review is class-specific** (`systems_review.json`). A 14-system ROS that never hits biliary, pancreas, gastroparesis, NAION, SI, or lean-mass loss fails coverage.
+4. **Efficacy is weight quality.** Rate, protein g/kg/day, resistance training. A “successful” loss with no protein and no lifting fail-closes this usage.
+5. **Grade what you find.** CTCAE v6.0 G1–G5. Expected vs serious. Relatedness: certain / probable / possible / unlikely / unassessable.
+6. **Disposition is a verb.** `continue` | `reduce` | `hold` | `stop` | `ed` | `refer`. Then follow-up and a safety-net the patient could use at 02:00. Safety-net is not a substitute for ED.
+7. **Boxed warning is not trivia.** MTC/MEN2, pregnancy, neck lump + hoarseness: not “review in 3 months.”
+
+Fail-closed findings live in one table: `fail_closed.json`. README, TASK, and the examiner all read that file.
 
 ---
 
-## Fail-closed (automatic fail, score capped)
-
-- Pancreatitis pattern not sent to ED / drug not held.
-- Bowel obstruction / bile-stone cholangitis / AKI-with-anuria treated as "titrate slower."
-- Active suicidal ideation not asked, or asked and ignored.
-- Sudden monocular field defect treated as dry eye / "see optometrist sometime."
-- Grey-market / self-reconstituted peptide dose-adjusted as if it were licensed product.
-- Stopping the drug solely for expected G1 nausea on a stable tolerated dose (idiot move, also fail-closed if it is the only action).
-
----
-
-## Commands (harness)
+## Commands
 
 ```
 chart                 visible record only
 items                 class-specific systems review ids
-ask <item_id>         elicit standardised-patient / chart answer
+ask <item_id>         elicit; writes ask_text + finding_text into the history
 examine               limited exam if the station has one
-order <test_id>       only if the station lists it
-note                  write JSON assessment (see schema)
-submit                freeze trace, copy, score
+order <test_id>       logged with indicated true/false
+note                  JSON assessment
+submit                freeze, copy, score, write handoff.json
 ```
 
-Asking is the clinical act. Unasked hidden findings are missed findings.
+Clock is `duration_min` on the door (8). Recorded on submit. Overtime is noted, not an automatic fail.
 
 ---
 
@@ -75,23 +68,24 @@ Asking is the clinical act. Unasked hidden findings are missed findings.
 }
 ```
 
+The examiner scores `off_label_disclosed`, `indication`, `exposure.source`, and gold `must_address`. If it is in the schema, it is marked.
+
 ---
 
-## Scoring (examiner)
+## Scoring
 
-| Domain | Weight | What it measures |
+Weights in `fail_closed.json`.
+
+| Domain | Weight | Measures |
 |---|---|---|
-| Coverage | 0.20 | Core GLP-1 items asked, not generic ROS length |
-| Critical detection | 0.25 | Hidden red flags actually elicited |
+| Coverage | 0.15 | Core and required asks present as `ask` events |
+| Critical detection | 0.25 | Finding-specific elicit IDs actually asked |
 | AE classification | 0.15 | Term, grade, expectedness, relatedness |
-| Disposition | 0.25 | Action matches gold; fail-closed overrides |
-| Longevity composition | 0.10 | Protein, lifting, rate of loss — the off-label point |
-| Safety-net | 0.05 | Specific, time-bound, patient-usable |
+| Disposition | 0.20 | Matches gold; fail-closed overrides |
+| Longevity composition | 0.10 | Protein, lifting, weight_quality |
+| Contract | 0.10 | off-label, indication, source, must_address |
+| Safety-net | 0.05 | Specific, time-bound, usable tonight |
 
-Idiot index (0–1) penalises: shotgun labs, stopping for G1 expected AE, celebrating muscle loss, coaching instead of triage, treating compounded grey product as Ozempic. Final = domain_score × (1 − 0.5 × idiot_index).
+Pass 0.70. Distinction 0.85. Fail-closed caps the mark at 0.30.
 
-Pass 0.70. Distinction 0.85.
-
----
-
-This environment evaluates a clinical trial agent on **interpretability**: the trace should show *which* system was asked, *what* was found, *how* it was graded, and *what* was done. A fluent paragraph with no asks is a fail.
+This clinic evaluates **interpretability**: the handoff must show which system was asked, what was found, how it was graded, and what was done.

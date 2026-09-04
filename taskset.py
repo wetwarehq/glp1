@@ -12,6 +12,7 @@ VIGNETTES = ROOT / "vignettes.jsonl"
 SYSTEMS = ROOT / "systems_review.json"
 FRAME = ROOT / "frame.toml"
 TASK = ROOT / "TASK.md"
+FAIL_CLOSED = ROOT / "fail_closed.json"
 
 
 def _frame_value(key: str) -> str:
@@ -48,6 +49,10 @@ def load_systems() -> dict[str, Any]:
     return json.loads(SYSTEMS.read_text(encoding="utf-8"))
 
 
+def load_fail_closed() -> dict[str, Any]:
+    return json.loads(FAIL_CLOSED.read_text(encoding="utf-8"))
+
+
 def load_vignettes() -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     with VIGNETTES.open(encoding="utf-8") as fh:
@@ -67,6 +72,14 @@ def by_id(vignette_id: str) -> dict[str, Any]:
 
 def core_item_ids() -> list[str]:
     return list(load_systems()["core_every_station"])
+
+
+def item_by_id(item_id: str) -> dict[str, Any] | None:
+    for domain in load_systems()["domains"]:
+        for item in domain["items"]:
+            if item["id"] == item_id:
+                return {**item, "domain": domain["label"]}
+    return None
 
 
 def all_item_ids() -> list[str]:

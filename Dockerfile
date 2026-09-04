@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.description="OSCE stations: GLP-1 AE monitoring a
 RUN useradd -m -u 1000 clinic
 WORKDIR /clinic
 COPY bin/glp1-trace /usr/local/bin/glp1-trace
-COPY TASK.md frame.toml taskset.py harness.py rubric.py systems_review.json vignettes.jsonl /clinic/
+COPY TASK.md frame.toml fail_closed.json taskset.py harness.py rubric.py verifier.py handoff.py systems_review.json vignettes.jsonl /clinic/
 COPY scripts /clinic/scripts
 RUN chmod +x /usr/local/bin/glp1-trace \
     && mkdir -p /trace /score \
