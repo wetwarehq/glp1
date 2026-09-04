@@ -47,7 +47,8 @@ def build_handoff(
     core = core_item_ids()
     required = list(vignette.get("required_asks") or [])
     clock_event = next((e for e in reversed(events) if e.get("kind") == "clock"), {})
-    duration = int(vignette.get("duration_min") or clock_event.get("duration_min") or 8)
+    duration = int(vignette.get("duration_min") or clock_event.get("duration_min") or contract.get("clock_minutes") or 8)
+    exam_event = next((e for e in reversed(events) if e.get("kind") == "examine"), None)
     return {
         "product": "clinic",
         "namespace": namespace(),
@@ -66,6 +67,15 @@ def build_handoff(
             "overtime": bool(clock_event.get("overtime")),
         },
         "history": history,
+        "exam": (
+            {
+                "done": True,
+                "finding_text": exam_event.get("finding_text") or exam_event.get("finding") or "",
+                "ts": exam_event.get("ts"),
+            }
+            if exam_event
+            else {"done": False, "finding_text": ""}
+        ),
         "unasked_core": [i for i in core if i not in seen],
         "unasked_required": [i for i in required if i not in seen],
         "note": result.get("note") or {},

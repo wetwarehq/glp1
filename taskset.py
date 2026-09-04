@@ -45,6 +45,20 @@ def namespace() -> str:
     return frame or env or systems or "glp1"
 
 
+def assert_contract() -> None:
+    """Refuse weight/mark drift if frame.toml still carries numbers."""
+    fc = load_fail_closed()
+    for key in ("pass_mark", "distinction"):
+        raw = _frame_value(key)
+        if not raw:
+            continue
+        if abs(float(raw) - float(fc[key])) > 1e-9:
+            raise RuntimeError(f"contract drift: frame {key}={raw} fail_closed={fc[key]}")
+    dur = _frame_value("duration_min")
+    if dur and int(dur) != int(fc.get("clock_minutes") or 0):
+        raise RuntimeError(f"contract drift: frame duration_min={dur} fail_closed clock_minutes={fc.get('clock_minutes')}")
+
+
 def load_systems() -> dict[str, Any]:
     return json.loads(SYSTEMS.read_text(encoding="utf-8"))
 

@@ -4,10 +4,15 @@
   "dispositions": ["continue", "reduce", "hold", "stop", "ed", "refer"],
   "relatedness": ["certain", "probable", "possible", "unlikely", "unassessable"],
   "clock_minutes": 8,
+  "clock_enforced": false,
   "pass_mark": 0.7,
   "distinction": 0.85,
   "fail_closed_cap": 0.3,
   "idiot_penalty_weight": 0.5,
+  "contract_fail_closed": {
+    "undisclosed_off_label": true,
+    "unlicensed_called_brand": true
+  },
   "scoring": {
     "coverage": 0.15,
     "critical_detection": 0.25,
@@ -30,8 +35,8 @@
       "id": "biliary_colic_after_rapid_loss",
       "label": "Biliary colic after rapid loss",
       "elicit": ["gi.pain_map", "hepato.biliary"],
-      "need_disp": ["hold", "reduce", "stop", "refer"],
-      "why": "Do not increase the dose. Image. Fever, jaundice, or relentless pain is ED."
+      "need_disp": ["hold", "reduce", "stop", "refer", "ed"],
+      "why": "Do not increase the dose. Image. Fever, jaundice, or relentless pain is ED — sending them is allowed. Continue is not."
     },
     {
       "id": "acute_pancreatitis_pattern",

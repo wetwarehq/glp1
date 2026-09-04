@@ -14,7 +14,7 @@ Source: [github.com/wetwarehq/glp1](https://github.com/wetwarehq/glp1)
 <tbody>
 <tr><th>Product</th><td>clinic</td></tr>
 <tr><th>Namespace</th><td><code>glp1</code></td></tr>
-<tr><th>Room</th><td>family practice, 8 minutes, 8 stations (OSCE)</td></tr>
+<tr><th>Room</th><td>family practice, 8 OSCE stations. Door time 8 min (recorded, not enforced).</td></tr>
 <tr><th>Drug class</th><td>GLP-1 receptor agonists, including dual GIP/GLP-1; also compounded and unlicensed product</td></tr>
 <tr><th>Task</th><td>adverse-event monitoring at routine follow-up</td></tr>
 <tr><th>Use</th><td>off-label longevity</td></tr>
@@ -44,7 +44,7 @@ Source: [github.com/wetwarehq/glp1](https://github.com/wetwarehq/glp1)
 7. Personal or family medullary thyroid cancer, MEN2, pregnancy, and a neck lump with hoarseness are not “review in three months.”
 8. Mild, expected, dose-day nausea on a stable dose is not a reason to stop.
 9. Compounded, grey, or kitchen-reconstituted product is not the licensed pen.
-10. Clock is eight minutes. Recorded on submit. Overtime is noted, not an automatic fail.
+10. Clock is eight minutes on the door. Recorded on submit. Overtime is noted. Nothing stops, nothing fails on time.
 
 ## How the agent acts
 
@@ -155,7 +155,7 @@ Source: `vignettes.jsonl`. Each record has the correct plan.
 </thead>
 <tbody>
 <tr><td><code>st01</code></td><td>compounded semaglutide 1.0 mg, 12 weeks, 9% down</td><td>muscle at risk (protein ~0.6 g/kg, no lifting); mild nausea only</td><td><code>continue</code></td><td>do not stop for mild nausea; protein + lifting; write off-label; compounded ≠ brand. Skip protein/lifting, or call muscle loss a success, and the station fail-closes.</td></tr>
-<tr><td><code>st02</code></td><td>branded tirzepatide 10 mg, 1.4 kg/week</td><td>biliary colic, pale stool</td><td><code>hold</code></td><td>do not increase dose; liver tests + ultrasound; jaundice / fever / relentless pain → ED</td></tr>
+<tr><td><code>st02</code></td><td>branded tirzepatide 10 mg, 1.4 kg/week</td><td>biliary colic, pale stool</td><td><code>hold</code></td><td>do not increase dose; liver tests + ultrasound. Fever / jaundice / relentless pain → ED is allowed. Continue is not.</td></tr>
 <tr><td><code>st03</code></td><td>branded semaglutide 2.4 mg; gallbladder already out</td><td>pancreatitis pattern</td><td><code>ed</code></td><td>hold the GLP-1; not antiemetic and home</td></tr>
 <tr><td><code>st04</code></td><td>branded semaglutide 1.7 mg, patient increased the dose</td><td>delayed emptying + volume depletion</td><td><code>hold</code></td><td>fluids, creatinine; not a prokinetic and continue</td></tr>
 <tr><td><code>st05</code></td><td>branded semaglutide 1.0 mg; protein and lifting are fine</td><td>new anhedonia + passive suicidal thinking</td><td><code>hold</code></td><td>ask plan and intent; this is a safety visit, not a dose visit</td></tr>

@@ -22,7 +22,7 @@
 ## Required behaviour every station
 
 1. **Name the exposure.** Molecule, dose, last titration, source (brand / compounded / grey).
-2. **State the indication as the patient understands it.** Off-label for longevity if it is. Write that down.
+2. **State the indication as the patient understands it.** Off-label for longevity if it is. Write that down. Undisclosed off-label, or calling compounded/grey product a brand, fail-closes.
 3. **Systems review is class-specific** (`systems_review.json`). A 14-system ROS that never hits biliary, pancreas, gastroparesis, NAION, SI, or lean-mass loss fails coverage.
 4. **Efficacy is weight quality.** Rate, protein g/kg/day, resistance training. A “successful” loss with no protein and no lifting fail-closes this usage.
 5. **Grade what you find.** CTCAE v6.0 G1–G5. Expected vs serious. Relatedness: certain / probable / possible / unlikely / unassessable.

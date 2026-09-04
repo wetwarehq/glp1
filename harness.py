@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from taskset import all_item_ids, by_id, item_by_id, load_fail_closed, load_systems, namespace
+from taskset import all_item_ids, by_id, item_by_id, load_fail_closed, load_systems, namespace, assert_contract
 from verifier import verify
 
 ROOT = Path(__file__).resolve().parent
@@ -85,6 +85,7 @@ class Tracer:
 class Room:
     def __init__(self, vignette_id: str, trace_path: Path) -> None:
         self.v = by_id(vignette_id)
+        assert_contract()
         self.systems = load_systems()
         self.tracer = Tracer(trace_path)
         self.asked: set[str] = set()

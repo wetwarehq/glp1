@@ -90,7 +90,7 @@ def coverage_score(asked: set[str], vignette: dict[str, Any]) -> tuple[float, li
 
 
 def critical_score(asked: set[str], note: dict[str, Any], vignette: dict[str, Any]) -> tuple[float, list[str], list[str]]:
-    """Elicit = the finding's listed questions, not the whole required_asks list."""
+    """Elicit the listed questions. Naming the finding in the note is the other half."""
     findings = list(vignette.get("critical_findings") or [])
     rules = fail_rules()
     if not findings:
@@ -98,29 +98,38 @@ def critical_score(asked: set[str], note: dict[str, Any], vignette: dict[str, An
     notes: list[str] = []
     reasons: list[str] = []
     fracs: list[float] = []
-    blob = _norm(json.dumps(note))
     for f in findings:
         rule = rules.get(f, {})
         elicit = list(rule.get("elicit") or [])
         if not elicit:
             elicit = [i for i in (vignette.get("required_asks") or []) if i in (vignette.get("hidden") or {})]
         hit = len(set(elicit) & asked) / max(1, len(elicit))
-        fracs.append(hit)
+        named = _finding_named(f, note, vignette, rule)
+        fracs.append(0.7 * hit + 0.3 * (1.0 if named else 0.0))
         if hit < 1.0:
             notes.append(f)
             if f in rules:
                 reasons.append(f"missed elicit for {f}: {elicit}")
-        # naming: gold AE terms or finding tokens in the note
-        named = False
-        for a in note.get("aes") or []:
-            if isinstance(a, dict) and a.get("term"):
-                named = True
-                break
-        if _norm(f)[:12] in blob:
-            named = True
-        if named:
-            fracs[-1] = min(1.0, fracs[-1] + 0.0)
+        if not named:
+            notes.append(f"unnamed: {f}")
     return sum(fracs) / len(fracs), notes, reasons
+
+
+def _finding_named(finding_id: str, note: dict[str, Any], vignette: dict[str, Any], rule: dict[str, Any]) -> bool:
+    gold = vignette.get("gold") or {}
+    blob = _norm(json.dumps(note))
+    label = str(rule.get("label") or finding_id)
+    if any(tok in blob for tok in _tokens(label) if len(tok) >= 5):
+        return True
+    for g in gold.get("aes") or []:
+        for a in note.get("aes") or []:
+            if isinstance(a, dict) and term_match(a.get("term"), g.get("term")):
+                return True
+    need_q = list(rule.get("need_weight_quality") or [])
+    got_q = str((note.get("composition") or {}).get("weight_quality") or "")
+    if need_q and got_q in need_q:
+        return True
+    return False
 
 
 def ae_score(note: dict[str, Any], vignette: dict[str, Any]) -> tuple[float, list[str]]:
@@ -233,15 +242,20 @@ def composition_score(note: dict[str, Any], vignette: dict[str, Any], asked: set
     return sum(parts) / len(parts), notes, reasons
 
 
-def contract_score(note: dict[str, Any], vignette: dict[str, Any]) -> tuple[float, list[str]]:
+def contract_score(note: dict[str, Any], vignette: dict[str, Any]) -> tuple[float, list[str], list[str]]:
     gold = vignette.get("gold") or {}
     parts: list[float] = []
     notes: list[str] = []
+    reasons: list[str] = []
+    gates = contract().get("contract_fail_closed") or {}
+
     want_ol = bool(gold.get("off_label_disclosed"))
     got_ol = bool(note.get("off_label_disclosed"))
     if want_ol and not got_ol:
         parts.append(0.0)
         notes.append("off-label not disclosed")
+        if gates.get("undisclosed_off_label"):
+            reasons.append("fail-closed: off-label use not disclosed")
     else:
         parts.append(1.0)
 
@@ -264,6 +278,8 @@ def contract_score(note: dict[str, Any], vignette: dict[str, Any]) -> tuple[floa
         else:
             parts.append(0.0)
             notes.append(f"source {got_s or '∅'} vs {want_s}")
+            if gates.get("unlicensed_called_brand") and want_s in {"compounded", "grey"} and got_s == "brand":
+                reasons.append("fail-closed: unlicensed product treated as brand")
 
     blob = " ".join(_tokens(json.dumps(note)))
     must = list(gold.get("must_address") or [])
@@ -280,7 +296,7 @@ def contract_score(note: dict[str, Any], vignette: dict[str, Any]) -> tuple[floa
             else:
                 notes.append(f"unaddressed: {item}")
         parts.append(hits / len(must))
-    return sum(parts) / max(1, len(parts)), notes
+    return sum(parts) / max(1, len(parts)), notes, reasons
 
 
 def safety_net_score(note: dict[str, Any]) -> float:
@@ -364,7 +380,7 @@ def score_trace(trace_path: Path, vignette_id: str) -> dict[str, Any]:
     ae, ae_notes = ae_score(note, v)
     disp, disp_notes, disp_reasons = disposition_score(note, v)
     comp, comp_notes, comp_reasons = composition_score(note, v, asked)
-    contract_s, contract_notes = contract_score(note, v)
+    contract_s, contract_notes, contract_reasons = contract_score(note, v)
     net = safety_net_score(note)
     idiot, idiot_flags = idiot_index(note, events, v)
 
@@ -375,7 +391,7 @@ def score_trace(trace_path: Path, vignette_id: str) -> dict[str, Any]:
     idiot_w = float(cfg.get("idiot_penalty_weight") or 0.50)
     cap = float(cfg.get("fail_closed_cap") or 0.30)
 
-    fail_reasons = crit_reasons + disp_reasons + comp_reasons
+    fail_reasons = crit_reasons + disp_reasons + comp_reasons + contract_reasons
     fail_closed = bool(fail_reasons)
     domains = {
         "coverage": round(cov, 4),

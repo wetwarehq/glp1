@@ -1,4 +1,4 @@
-"""Optional Modal runner. Image is still ghcr.io/wetwarehq/glp1."""
+"""Modal runner. Default image is ghcr.io/wetwarehq/glp1:latest."""
 
 from __future__ import annotations
 
@@ -6,17 +6,7 @@ import modal
 
 app = modal.App("glp1")
 
-image = (
-    modal.Image.from_registry("ghcr.io/wetwarehq/glp1:latest")
-    if False
-    else modal.Image.debian_slim(python_version="3.12")
-    .apt_install("curl", "build-essential")
-    .run_commands("curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y")
-    .add_local_dir(".", remote_path="/clinic", ignore=["runtime/target", ".git"])
-    .run_commands(
-        "export PATH=$HOME/.cargo/bin:$PATH && cd /clinic/runtime && cargo build --release && cp target/release/glp1-trace /usr/local/bin/glp1-trace"
-    )
-)
+image = modal.Image.from_registry("ghcr.io/wetwarehq/glp1:latest")
 
 
 @app.function(image=image, timeout=180)

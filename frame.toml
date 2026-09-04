@@ -32,18 +32,7 @@ clock = "station_minutes"
 entrypoint = "verifier.py"
 contract = "fail_closed.json"
 
-[scoring]
-# Authoritative weights live in fail_closed.json. Duplicated here for the frame.
-coverage = 0.15
-critical_detection = 0.25
-ae_classification = 0.15
-disposition = 0.20
-longevity_composition = 0.10
-contract = 0.10
-safety_net = 0.05
-idiot_penalty_weight = 0.50
-
 [osce]
+# Door time. Recorded on submit. Not enforced. Authoritative numbers in fail_closed.json.
 duration_min = 8
-pass_mark = 0.70
-distinction = 0.85
+
