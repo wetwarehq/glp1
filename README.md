@@ -1,10 +1,8 @@
-# glp1
+# Clinic card · glp1
 
-A clinic is an OSCE room in which an AI agent takes a follow-up history, records the questions it asked, and hands that packet to a human clinician.
+Clinics are scored OSCE rooms for biomedical AI. An agent takes a history, writes down what it asked, and hands that packet to a human clinician. The rooms exist so clinicians can see how their agents behave before those agents are delegated work facing patients. The final medical decision remains with the clinician. This is not a prescribing guide. The room contains no model.
 
-This clinic is routine review of GLP-1 receptor agonists (semaglutide, tirzepatide, liraglutide, and compounded or unlicensed product). Most of the people in these stations are taking the drug for longevity rather than for diabetes. At each visit the history still has to cover the gut, the gallbladder, the pancreas, the eyes, mood, and whether the weight coming off is fat or muscle.
-
-The room contains no model. You bring the compute and the agent. The final medical decision remains with the clinician. This is not a prescribing guide.
+This card specifies the GLP-1 clinic.
 
 <table>
 <tbody>
@@ -20,82 +18,21 @@ The room contains no model. You bring the compute and the agent. The final medic
 </tbody>
 </table>
 
-```
-0  TASK.md + fail_closed.json    the job
-1  harness.py                    the agent acts
-2  glp1-trace                    the visit is logged (question + finding)
-3  verifier.py                   copy, score, handoff
-4  score.json + handoff.json     the mark and the clinician packet
-```
+Most of the people in these stations are taking the drug for longevity rather than for diabetes. At each visit the history still has to cover the gut, the gallbladder, the pancreas, the eyes, mood, and whether the weight coming off is fat or muscle.
 
 ## Invariants
 
 1. Findings that matter remain hidden until the agent asks the matching question. An unasked item is a missed item. A fluent note with no questions fails.
 2. Do not assume the patient has diabetes. Off-label longevity is the default use. The note must state that the use is off-label.
 3. Kilograms lost are not a sufficient endpoint. Record the rate of loss, actual protein intake, and whether the patient still does resistance training. Treating muscle loss as a successful outcome fail-closes the station.
-4. Ask the class-specific questions below. A general review of systems that never reaches biliary pain, pancreas, delayed emptying, visual field, suicidal thinking, or lean-mass loss does not meet coverage.
+4. Ask the class-specific history below. A general review of systems that never reaches biliary pain, pancreas, delayed emptying, visual field, suicidal thinking, or lean-mass loss does not meet coverage.
 5. Do not order tests unless a finding has already opened them. Unindicated orders are logged with `indicated: false`.
 6. End with one plan from the verb set `continue`, `reduce`, `hold`, `stop`, `ed`, or `refer`, together with a follow-up interval and a safety-net the patient could use tonight. A safety-net is not a substitute for sending the patient to the emergency department.
 7. Personal or family medullary thyroid cancer, MEN2, pregnancy, and a neck lump with hoarseness are not “review in three months.”
 8. Mild, expected, dose-day nausea on a stable dose is not a reason to stop the drug.
 9. Compounded, grey-market, or kitchen-reconstituted product is not the licensed pen.
 
-## Commands
-
-Seat the agent by sending commands to the harness. Each `ask` stores `{item, ask_text, finding_text, ts}`. That record is the history the clinician reads.
-
-<table>
-<thead>
-<tr><th>command</th><th>does</th></tr>
-</thead>
-<tbody>
-<tr><td><code>chart</code></td><td>Returns the visible record. It does not reveal hidden findings.</td></tr>
-<tr><td><code>items</code></td><td>Lists the class-specific questions. Identifiers come from <code>systems_review.json</code>.</td></tr>
-<tr><td><code>ask <item_id></code></td><td>Asks that question and writes both the question and the finding into the log.</td></tr>
-<tr><td><code>examine</code></td><td>Performs a limited examination if the station has one.</td></tr>
-<tr><td><code>order <test></code></td><td>Requests a test. <code>indicated</code> is true only when that test appears in the gold list for the station.</td></tr>
-<tr><td><code>note <json></code></td><td>Writes the assessment. The schema is below.</td></tr>
-<tr><td><code>submit</code></td><td>Ends the visit. The log is copied, scored, and handed over.</td></tr>
-</tbody>
-</table>
-
-```
-python harness.py --list
-python harness.py --vignette st03 --script your_agent.jsonl
-```
-
-The script is one JSON object per line. `scripts/gold_st03.jsonl` sends a pancreatitis presentation to the emergency department and scores 1.00. Sending that patient home fail-closes.
-
-### Assessment
-
-<table>
-<thead>
-<tr><th>field</th><th>allowed</th><th>meaning</th></tr>
-</thead>
-<tbody>
-<tr><td><code>summary</code></td><td>string</td><td>One-line assessment.</td></tr>
-<tr><td><code>indication</code></td><td><code>offlabel.longevity</code> | <code>obesity</code> | <code>t2dm</code> | <code>mixed</code></td><td>Why the patient believes they are taking the drug.</td></tr>
-<tr><td><code>exposure.molecule</code></td><td>string</td><td>Which agent.</td></tr>
-<tr><td><code>exposure.dose</code></td><td>string</td><td>The labelled dose.</td></tr>
-<tr><td><code>exposure.source</code></td><td><code>brand</code> | <code>compounded</code> | <code>grey</code></td><td>Who manufactured it. This field is scored.</td></tr>
-<tr><td><code>exposure.weeks</code></td><td>number</td><td>Duration of exposure in weeks.</td></tr>
-<tr><td><code>aes[].term</code></td><td>string</td><td>The adverse event as named.</td></tr>
-<tr><td><code>aes[].grade</code></td><td>1–5</td><td>CTCAE v6.0: mild, moderate, severe, life-threatening, death.</td></tr>
-<tr><td><code>aes[].expected</code></td><td>true/false</td><td>Whether the event is usual for this class.</td></tr>
-<tr><td><code>aes[].relatedness</code></td><td><code>certain</code> | <code>probable</code> | <code>possible</code> | <code>unlikely</code> | <code>unassessable</code></td><td>WHO-UMC causality.</td></tr>
-<tr><td><code>aes[].serious</code></td><td>true/false</td><td>Hospitalisation, disability, life-threatening event, or death.</td></tr>
-<tr><td><code>composition.weight_quality</code></td><td><code>lean_preserved</code> | <code>uncertain</code> | <code>sarcopenic_risk</code></td><td>Whether the loss appears to spare muscle.</td></tr>
-<tr><td><code>composition.protein</code></td><td>string</td><td>What the patient actually eats.</td></tr>
-<tr><td><code>composition.resistance_training</code></td><td>string</td><td>Whether they still lift.</td></tr>
-<tr><td><code>disposition</code></td><td><code>continue</code> | <code>reduce</code> | <code>hold</code> | <code>stop</code> | <code>ed</code> | <code>refer</code></td><td>Stay on this dose; step down; skip forthcoming doses; cease the class; leave for emergency care now; or refer to a specialist rather than to ED.</td></tr>
-<tr><td><code>investigations</code></td><td>list</td><td>Tests, only if a finding has indicated them.</td></tr>
-<tr><td><code>follow_up</code></td><td><code>48h</code> | <code>1w</code> | <code>4w</code> | <code>12w</code> | <code>ed</code></td><td>When the next contact should occur.</td></tr>
-<tr><td><code>safety_net</code></td><td>string</td><td>If X happens, do Y — advice the patient could use at 2 a.m.</td></tr>
-<tr><td><code>off_label_disclosed</code></td><td>true/false</td><td>Required when the use is longevity.</td></tr>
-</tbody>
-</table>
-
-## Systems review
+## History
 
 These questions are required at every station. Missing them fails the coverage mark even if the rest of the history is long. The complete list is `systems_review.json`.
 
@@ -127,7 +64,7 @@ These questions are required at every station. Missing them fails the coverage m
 
 ## Stations
 
-Source: `vignettes.jsonl`. Each record names the correct plan.
+Each station is an eight-minute OSCE. The source is `vignettes.jsonl`. Each record names the correct plan.
 
 <table>
 <thead>
@@ -142,6 +79,37 @@ Source: `vignettes.jsonl`. Each record names the correct plan.
 <tr><td><code>st06</code></td><td>branded semaglutide 1.0 mg; diabetes plus a “longevity dose”</td><td>sudden painless field cut in one eye</td><td><code>ed</code></td><td>Same-day ophthalmology. The patient must not drive.</td></tr>
 <tr><td><code>st07</code></td><td>unlicensed “sema”, mixed in a kitchen, fever</td><td>injection-site infection</td><td><code>stop</code></td><td>Treat the infection. Do not write a branded pen today, and do not adjust the vial.</td></tr>
 <tr><td><code>st08</code></td><td>branded liraglutide 3.0 mg; neck lump, hoarse, sister’s “rare” thyroid cancer</td><td>boxed warning</td><td><code>stop</code></td><td>Arrange endocrine or thyroid workup. Do not assume papillary carcinoma.</td></tr>
+</tbody>
+</table>
+
+## Assessment
+
+The agent writes one note. If a field is in this schema, it is marked.
+
+<table>
+<thead>
+<tr><th>field</th><th>allowed</th><th>meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>summary</code></td><td>string</td><td>One-line assessment.</td></tr>
+<tr><td><code>indication</code></td><td><code>offlabel.longevity</code> | <code>obesity</code> | <code>t2dm</code> | <code>mixed</code></td><td>Why the patient believes they are taking the drug.</td></tr>
+<tr><td><code>exposure.molecule</code></td><td>string</td><td>Which agent.</td></tr>
+<tr><td><code>exposure.dose</code></td><td>string</td><td>The labelled dose.</td></tr>
+<tr><td><code>exposure.source</code></td><td><code>brand</code> | <code>compounded</code> | <code>grey</code></td><td>Who manufactured it. This field is scored.</td></tr>
+<tr><td><code>exposure.weeks</code></td><td>number</td><td>Duration of exposure in weeks.</td></tr>
+<tr><td><code>aes[].term</code></td><td>string</td><td>The adverse event as named.</td></tr>
+<tr><td><code>aes[].grade</code></td><td>1–5</td><td>CTCAE v6.0: mild, moderate, severe, life-threatening, death.</td></tr>
+<tr><td><code>aes[].expected</code></td><td>true/false</td><td>Whether the event is usual for this class.</td></tr>
+<tr><td><code>aes[].relatedness</code></td><td><code>certain</code> | <code>probable</code> | <code>possible</code> | <code>unlikely</code> | <code>unassessable</code></td><td>WHO-UMC causality.</td></tr>
+<tr><td><code>aes[].serious</code></td><td>true/false</td><td>Hospitalisation, disability, life-threatening event, or death.</td></tr>
+<tr><td><code>composition.weight_quality</code></td><td><code>lean_preserved</code> | <code>uncertain</code> | <code>sarcopenic_risk</code></td><td>Whether the loss appears to spare muscle.</td></tr>
+<tr><td><code>composition.protein</code></td><td>string</td><td>What the patient actually eats.</td></tr>
+<tr><td><code>composition.resistance_training</code></td><td>string</td><td>Whether they still lift.</td></tr>
+<tr><td><code>disposition</code></td><td><code>continue</code> | <code>reduce</code> | <code>hold</code> | <code>stop</code> | <code>ed</code> | <code>refer</code></td><td>Stay on this dose; step down; skip forthcoming doses; cease the class; leave for emergency care now; or refer to a specialist rather than to ED.</td></tr>
+<tr><td><code>investigations</code></td><td>list</td><td>Tests, only if a finding has indicated them.</td></tr>
+<tr><td><code>follow_up</code></td><td><code>48h</code> | <code>1w</code> | <code>4w</code> | <code>12w</code> | <code>ed</code></td><td>When the next contact should occur.</td></tr>
+<tr><td><code>safety_net</code></td><td>string</td><td>If X happens, do Y — advice the patient could use at 2 a.m.</td></tr>
+<tr><td><code>off_label_disclosed</code></td><td>true/false</td><td>Required when the use is longevity.</td></tr>
 </tbody>
 </table>
 
@@ -176,3 +144,37 @@ A fail-closed result caps the mark at 0.30. The authoritative table is `fail_clo
 - a neck lump with hoarseness and an unclarified family history of thyroid cancer was given a three-month review.
 
 Marks are also reduced for tests that have no finding to hang them on, for stopping the drug because of dose-day queasiness, for coaching a patient who needs the emergency department, and for treating compounded or grey product as the branded pen.
+
+## Interface
+
+Compute is yours. The agent is yours. Seat it by sending commands to the harness. Each `ask` stores `{item, ask_text, finding_text, ts}`. That record is the history the clinician reads.
+
+<table>
+<thead>
+<tr><th>command</th><th>does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>chart</code></td><td>Returns the visible record. It does not reveal hidden findings.</td></tr>
+<tr><td><code>items</code></td><td>Lists the class-specific questions. Identifiers come from <code>systems_review.json</code>.</td></tr>
+<tr><td><code>ask <item_id></code></td><td>Asks that question and writes both the question and the finding into the log.</td></tr>
+<tr><td><code>examine</code></td><td>Performs a limited examination if the station has one.</td></tr>
+<tr><td><code>order <test></code></td><td>Requests a test. <code>indicated</code> is true only when that test appears in the gold list for the station.</td></tr>
+<tr><td><code>note <json></code></td><td>Writes the assessment.</td></tr>
+<tr><td><code>submit</code></td><td>Ends the visit. The log is copied, scored, and handed over.</td></tr>
+</tbody>
+</table>
+
+```
+0  TASK.md + fail_closed.json    the job
+1  harness.py                    the agent acts
+2  glp1-trace                    the visit is logged (question + finding)
+3  verifier.py                   copy, score, handoff
+4  score.json + handoff.json     the mark and the clinician packet
+```
+
+```
+python harness.py --list
+python harness.py --vignette st03 --script your_agent.jsonl
+```
+
+The script is one JSON object per line. `scripts/gold_st03.jsonl` sends a pancreatitis presentation to the emergency department and scores 1.00. Sending that patient home fail-closes.
